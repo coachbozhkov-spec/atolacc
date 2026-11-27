@@ -125,3 +125,7 @@
  .adm-hello .btn{width:100%}
  .adm-main{padding-top:24px}
 }
+
+.adm-backup{margin-top:34px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;padding:18px 22px;border-radius:18px;background:var(--bg-2)}
+.adm-backup b{font-size:15px}
+.adm-backup .hint{margin-top:4px;max-width:40em}

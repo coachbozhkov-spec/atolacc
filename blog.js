@@ -272,6 +272,12 @@ ${more.map((x, i) => card(x, i)).join('\n')}
     if (!isAdmin(req)) return json(res, 401, { error: 'login' });
     if (req.method !== 'GET' && req.headers['x-admin'] !== '1') return json(res, 403, { error: 'Forbidden' });
 
+    if (p === '/api/admin/backup' && req.method === 'GET') {
+      const zip = await require('./backup').zipData(DATA);
+      res.writeHead(200, { 'Content-Type': 'application/zip', 'Content-Length': zip.length, 'Cache-Control': 'no-store',
+        'Content-Disposition': `attachment; filename="atol-backup-${today()}.zip"` });
+      return res.end(zip);
+    }
     if (p === '/api/admin/posts' && req.method === 'GET') {
       const l = [...await posts()].sort((a, b) => b.date.localeCompare(a.date));
       return json(res, 200, { posts: l, today: today() });

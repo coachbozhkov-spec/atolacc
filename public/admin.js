@@ -101,6 +101,7 @@
     filter = b.dataset.f; $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); renderList();
   }));
   $('#newPost').addEventListener('click', () => openEditor(null));
+  $('#backupBtn').addEventListener('click', () => { toast('Резервното копие се изтегля...'); location.href = '/api/admin/backup'; });
 
   /* ---------- Редактор ---------- */
   const form = $('#editForm'), ta = $('#f-body');
@@ -249,13 +250,36 @@
   $$('.adm-switch button').forEach(b => b.addEventListener('click', () => mode(b.dataset.mode)));
 
   /* ---------- Снимки ---------- */
+  /* Смаляване в браузъра: най-много 1600 px, около 300 KB */
+  const canWebp = (() => { try { return document.createElement('canvas').toDataURL('image/webp').startsWith('data:image/webp'); } catch { return false; } })();
+  async function shrink(file) {
+    let src;
+    try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch {
+      src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); });
+    }
+    const W = src.width || src.naturalWidth, Hh = src.height || src.naturalHeight;
+    const k = Math.min(1, 1600 / Math.max(W, Hh));
+    if (k === 1 && file.size <= 350 * 1024 && /jpeg|webp/.test(file.type)) return file;
+    const c = document.createElement('canvas'); c.width = Math.round(W * k); c.height = Math.round(Hh * k);
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, c.width, c.height);
+    const type = canWebp ? 'image/webp' : 'image/jpeg';
+    let q = 0.84, blob;
+    do { blob = await new Promise(r => c.toBlob(r, type, q)); q -= 0.08; } while (blob && blob.size > 320 * 1024 && q > 0.45);
+    return blob && blob.size < file.size ? blob : file;
+  }
   async function upload(file) {
-    if (!file || !/^image\/(jpeg|png|webp)$/.test(file.type)) { toast('Изберете снимка във формат JPG, PNG или WebP.', 'bad'); return null; }
-    if (file.size > 5 * 1024 * 1024) { toast('Снимката е над 5 MB. Намалете я и опитайте пак.', 'bad'); return null; }
+    if (!file || !file.type.startsWith('image/')) { toast('Изберете снимка (JPG, PNG или WebP).', 'bad'); return null; }
+    if (file.size > 30 * 1024 * 1024) { toast('Снимката е твърде голяма (над 30 MB).', 'bad'); return null; }
+    setState('Подготвяне на снимката...');
+    let small;
+    try { small = await shrink(file); } catch { setState(''); toast('Тази снимка не може да се отвори. Запазете я като JPG и опитайте пак.', 'bad'); return null; }
+    if (small.size > 5 * 1024 * 1024) { setState(''); toast('Снимката е твърде голяма. Опитайте с друга.', 'bad'); return null; }
     setState('Качване на снимката...');
-    const r = await api('/api/admin/upload', { method: 'POST', body: file, headers: { 'Content-Type': 'application/octet-stream' } });
+    const r = await api('/api/admin/upload', { method: 'POST', body: small, headers: { 'Content-Type': 'application/octet-stream' } });
     if (r.status !== 200) { setState(''); toast(r.data.error || 'Снимката не беше качена.', 'bad'); return null; }
-    setState('Снимката е качена.', 'ok');
+    setState('Снимката е качена (' + Math.round(small.size / 1024) + ' KB).', 'ok');
     return r.data.url;
   }
   function droppable(el, onFile) {

@@ -229,5 +229,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+if (require.main === module) require('./backup').startDaily(DATA);
 if (require.main === module) server.listen(PORT, () => console.log(`ATOL Accounting: http://localhost:${PORT}`));
 module.exports = server;

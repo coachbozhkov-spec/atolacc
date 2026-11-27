@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/styles.css?v=537318929a">
-<link rel="stylesheet" href="/admin.css?v=c13b00722e">
+<link rel="stylesheet" href="/admin.css?v=ed3b5f13e6">
 </head>
 <body class="adm">
 <header class="adm-top">
@@ -48,6 +48,10 @@
    <button type="button" class="on" data-f="all">Всички</button><button type="button" data-f="live">Публикувани</button><button type="button" data-f="draft">Чернови</button>
   </div>
   <div class="adm-list" id="list"></div>
+  <div class="adm-backup">
+   <div><b>Резервно копие</b><p class="hint">Всички статии, снимки, анкети и заявки в един файл. Пазете го на компютъра или в OneDrive. Сайтът прави и автоматично копие всеки ден.</p></div>
+   <button class="btn btn-ghost adm-sm" type="button" id="backupBtn"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Изтегли резервно копие</button>
+  </div>
  </section>
 
  <!-- Редактор -->
@@ -98,7 +102,7 @@
      <div class="adm-card">
       <span class="lbl">Снимка за корица <small>(по желание)</small></span>
       <label class="adm-cover" id="coverBox" tabindex="0">
-       <input type="file" id="coverFile" accept="image/jpeg,image/png,image/webp" hidden>
+       <input type="file" id="coverFile" accept="image/*" hidden>
        <span class="adm-cover-empty"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 8"/></svg><b>Плъзнете снимка тук</b><small>или натиснете, за да изберете</small></span>
       </label>
       <button type="button" class="adm-link danger" id="coverDel" hidden>Махни снимката</button>
@@ -143,8 +147,8 @@
  </form>
 </dialog>
 
-<input type="file" id="bodyImg" accept="image/jpeg,image/png,image/webp" hidden>
+<input type="file" id="bodyImg" accept="image/*" hidden>
 <div class="adm-toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/admin.js?v=d6eb21ca1d"></script>
+<script src="/admin.js?v=7f7fa0adc3"></script>
 </body>
 </html>
