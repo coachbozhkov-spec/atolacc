@@ -18,5 +18,7 @@ fav = (pub/'assets'/'mark-light.svg').read_text()
 prev = ('<title>ATOL Accounting</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n'
   '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">\n'
   '<style>\n' + (src/'styles.css').read_text() + '\n</style>\n' + body + '\n<script>\n' + (src/'app.js').read_text() + '\n</script>\n')
+import base64
+prev = prev.replace('<source srcset="assets/desislava.webp" type="image/webp">','').replace('src="assets/desislava.jpg"', 'src="data:image/jpeg;base64,' + base64.b64encode((pub/'assets'/'desislava.jpg').read_bytes()).decode() + '"')
 (R/'preview.html').write_text(prev)
 print('built', len(prev))
