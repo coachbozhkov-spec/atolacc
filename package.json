@@ -1,0 +1,10 @@
+{
+  "name": "atol-accounting-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Сайт на ATOL Accounting: облачно счетоводство",
+  "main": "server.js",
+  "scripts": { "build": "python3 build.py", "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "optionalDependencies": { "nodemailer": "^6.9.14" }
+}
