@@ -17,6 +17,27 @@
     header.classList.remove('menu-open'); menuBtn.setAttribute('aria-expanded', false);
   }));
 
+
+  /* Плаваща лента: появява се след скрол, пулсира след няколко секунди */
+  const dock = $('#dock');
+  if (dock) {
+    let closed = false, pulseT = null;
+    try { closed = sessionStorage.getItem('dockClosed') === '1'; } catch {}
+    dock.hidden = false; dock.classList.add('away');
+    const show = () => {
+      if (closed) return;
+      const want = window.scrollY > 420;
+      dock.classList.toggle('away', !want);
+      if (want && !pulseT && !dock.classList.contains('pulse')) pulseT = setTimeout(() => dock.classList.add('pulse'), 4000);
+      if (!want) { clearTimeout(pulseT); pulseT = null; dock.classList.remove('pulse'); }
+    };
+    window.addEventListener('scroll', show, { passive: true }); show();
+    $('#dockClose').addEventListener('click', () => {
+      closed = true; dock.classList.add('away'); clearTimeout(pulseT);
+      try { sessionStorage.setItem('dockClosed', '1'); } catch {}
+    });
+  }
+
   /* Активна връзка в менюто */
   const links = $$('.nav-links a[href^="#"]');
   const secs = links.map(a => $(a.getAttribute('href'))).filter(Boolean);

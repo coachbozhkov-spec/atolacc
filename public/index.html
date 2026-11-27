@@ -48,6 +48,7 @@
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-bank" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20.5h18"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-viber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c5 0 8 2.6 8 7.5S17 18 12 18c-.8 0-1.6-.1-2.3-.2L6.5 21v-3.6C4.9 16.1 4 14 4 10.5 4 5.6 7 3 12 3z"/><path d="M9.3 7.6c.4-.3.9-.2 1.1.2l.6 1.1c.2.4.1.8-.2 1l-.4.3c.4 1 1.2 1.8 2.2 2.2l.3-.4c.3-.3.7-.4 1-.2l1.1.6c.4.2.5.7.2 1.1-.6.8-1.5 1.1-2.5.7a7 7 0 0 1-4-4c-.4-1-.1-1.9.6-2.6z"/></symbol>
   <symbol id="mark" viewBox="0 0 240 242" fill="currentColor"><polygon points="105,4 130,4 79,238 52,238"/><polygon points="110,4 135,4 188,238 161,238"/><polygon points="99,35 123,35 38,204 14,204"/><polygon points="118,35 142,35 227,204 203,204"/><polygon points="50,150 190,150 190,164 50,164"/></symbol>
  </defs>
 </svg>
@@ -285,6 +286,12 @@
   <div class="bottom"><span>© <span id="yr">2026</span> АТОЛ АКАУНТИНГ ЕООД</span><span>Пловдив, България</span></div>
  </div>
 </footer>
+<div class="dock" id="dock" role="region" aria-label="Бърза връзка" hidden>
+ <a class="dock-btn ghost" href="#contacts"><svg><use href="#i-chat"/></svg><span>Запитване</span></a>
+ <a class="dock-btn ink" href="tel:+359894097779"><svg><use href="#i-phone"/></svg><span>Обади се</span></a>
+ <a class="dock-btn viber" href="viber://chat?number=%2B359894097779"><svg><use href="#i-viber"/></svg><span>Viber</span></a>
+ <button class="dock-x" id="dockClose" type="button" aria-label="Затвори"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+</div>
 <!--/BODY-->
 <script src="app.js"></script>
 </body>
