@@ -16,7 +16,7 @@ shutil.copy(src/'styles.css', pub/'styles.css'); shutil.copy(src/'app.js', pub/'
 body = html.split('<!--BODY-->')[1].split('<!--/BODY-->')[0]
 fav = (pub/'assets'/'mark-light.svg').read_text()
 prev = ('<title>ATOL Accounting</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n'
-  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Manrope:wght@400;500;600;700&display=swap">\n'
+  '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">\n'
   '<style>\n' + (src/'styles.css').read_text() + '\n</style>\n' + body + '\n<script>\n' + (src/'app.js').read_text() + '\n</script>\n')
 (R/'preview.html').write_text(prev)
 print('built', len(prev))
