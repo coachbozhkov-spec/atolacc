@@ -204,22 +204,25 @@
   });
   const skuField = $('#skuField');
   oForm.addEventListener('change', e => { if (e.target.name === 'warehouse') skuField.hidden = e.target.value !== 'Да'; });
-  const steps = $$('.ostep', oForm), bar = $$('.ostep-bar li', oForm);
-  const oBack = $('#oBack'), oNext = $('#oNext'), oSend = $('#oSend'), oCount = $('#oCount');
-  let step = 0;
-  function showStep(n) {
-    step = n;
-    steps.forEach((f, i) => { f.hidden = i !== n; });
-    bar.forEach((li, i) => li.classList.toggle('on', i <= n));
-    oBack.hidden = n === 0; oNext.hidden = n === steps.length - 1; oSend.hidden = n !== steps.length - 1;
-    oCount.textContent = 'Стъпка ' + (n + 1) + ' от ' + steps.length;
-    $('.status', oForm).hidden = true;
-    oForm.scrollTop = 0;
+  const steps = $$('.ostep', oForm), bar = $$('.ostep-bar a', oForm);
+  const oBody = $('#offerBody'), oSend = $('#oSend'), oCount = $('#oCount');
+  function markSection() {
+    const top = oBody.getBoundingClientRect().top + 90;
+    let cur = 0;
+    steps.forEach((f, i) => { if (f.getBoundingClientRect().top <= top) cur = i; });
+    if (oBody.scrollTop + oBody.clientHeight >= oBody.scrollHeight - 4) cur = steps.length - 1;
+    bar.forEach((a, i) => { a.classList.toggle('on', i <= cur); a.classList.toggle('cur', i === cur); });
+    oCount.textContent = 'Раздел ' + (cur + 1) + ' от ' + steps.length;
   }
-  function checkStep(n) {
+  oBody.addEventListener('scroll', markSection, { passive: true });
+  bar.forEach((a, i) => a.addEventListener('click', e => {
+    e.preventDefault();
+    oBody.scrollTo({ top: steps[i].offsetTop - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }));
+  function checkAll() {
     let ok = true;
-    $$('.field', steps[n]).forEach(f => { f.classList.remove('err'); const m = $('.msg', f); if (m) m.textContent = ''; });
-    $$('input[required],textarea[required]', steps[n]).forEach(el => {
+    $$('.field', oForm).forEach(f => { f.classList.remove('err'); const m = $('.msg', f); if (m) m.textContent = ''; });
+    $$('input[required],textarea[required]', oForm).forEach(el => {
       if (el.type === 'checkbox') return;
       const v = el.value.trim(), f = el.closest('.field'), m = f && $('.msg', f);
       let msg = '';
@@ -228,20 +231,18 @@
       else if (el.type === 'tel' && !phoneRe.test(v)) msg = 'Проверете телефонния номер.';
       if (msg) { ok = false; if (f) f.classList.add('err'); if (m) m.textContent = msg; }
     });
-    if (!ok) { const e = $('.err input,.err textarea', steps[n]); if (e) e.focus(); }
+    if (!ok) { const e = $('.err input,.err textarea', oForm); if (e) { e.focus({ preventScroll: true }); e.closest('.field').scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
     return ok;
   }
-  oNext.addEventListener('click', () => { if (checkStep(step)) showStep(step + 1); });
-  oBack.addEventListener('click', () => showStep(step - 1));
   $$('[data-offer]').forEach(b => b.addEventListener('click', e => {
     e.preventDefault();
     if (detail.open) closeModal(detail);
-    oForm.classList.remove('sent'); $('#offerDone').hidden = true; showStep(0);
-    openModal(offer);
+    oForm.classList.remove('sent'); $('#offerDone').hidden = true; $('.status', oForm).hidden = true;
+    openModal(offer); oBody.scrollTop = 0; markSection();
   }));
   oForm.addEventListener('submit', async e => {
     e.preventDefault();
-    if (step !== steps.length - 1) { if (checkStep(step)) showStep(step + 1); return; }
+    if (!checkAll()) return showStatus(oForm, 'bad', 'Попълнете отбелязаните полета.');
     if (!$('#o-gdpr').checked) return showStatus(oForm, 'bad', 'Потвърдете съгласието си, за да изпратим анкетата.');
     const data = {};
     for (const [k, v] of new FormData(oForm).entries()) { if (k === 'currencies') (data.currencies = data.currencies || []).push(v); else data[k] = v; }
@@ -257,9 +258,8 @@
     if (r.demo) return done(true);
     if (r.status === 200 && r.data.ok) return done(false);
     if (r.status === 400 && r.data.errors) {
-      const first = Object.keys(r.data.errors)[0];
-      const idx = steps.findIndex(f => f.querySelector('[name="' + first + '"]'));
-      if (idx >= 0) { showStep(idx); checkStep(idx); }
+      Object.keys(r.data.errors).forEach(k => { const el = oForm.querySelector('[name="' + k + '"]'), f = el && el.closest('.field'); if (f) { f.classList.add('err'); const m = $('.msg', f); if (m) m.textContent = r.data.errors[k]; } });
+      const f = $('.err', oForm); if (f) f.scrollIntoView({ block: 'center', behavior: 'smooth' });
       return showStatus(oForm, 'bad', 'Проверете отбелязаните полета.');
     }
     if (r.status === 429) return showStatus(oForm, 'bad', 'Изпратихте много заявки за кратко време. Опитайте отново след няколко минути.');

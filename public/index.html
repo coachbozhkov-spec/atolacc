@@ -343,11 +343,12 @@
   <div class="offer-head">
    <span class="eyebrow">Анкетна карта</span>
    <h3 id="offerTitle">Заявете индивидуална оферта</h3>
-   <p class="sub">Попълването отнема около 3 минути. Въз основа на отговорите ви ще ви изпратим оферта без скрити такси.</p>
-   <ol class="ostep-bar" aria-hidden="true"><li class="on">За вас</li><li>Обем</li><li>Финанси</li><li>Специфики</li><li>Услуги</li></ol>
+   <p class="sub">Около 3 минути. Въз основа на отговорите ви ще ви изпратим индивидуална оферта без скрити такси.</p>
+   <nav class="ostep-bar" aria-label="Раздели на анкетата"><a href="#os-0" class="on">Общи</a><a href="#os-1">Обем</a><a href="#os-2">Финанси</a><a href="#os-3">Специфики</a><a href="#os-4">Услуги</a><a href="#os-5">Организация</a></nav>
   </div>
+  <div class="offer-body" id="offerBody">
 
-  <fieldset class="ostep" data-step="0">
+  <fieldset class="ostep" data-step="0" id="os-0">
    <legend>1. Обща информация</legend>
    <div class="fgrid">
     <div class="field"><label for="o-name">Име и фамилия</label><input id="o-name" name="name" autocomplete="name" required maxlength="100"><span class="msg"></span></div>
@@ -360,7 +361,7 @@
    </div>
   </fieldset>
 
-  <fieldset class="ostep" data-step="1" hidden>
+  <fieldset class="ostep" data-step="1" id="os-1">
    <legend>2. Оперативен обем (средномесечно)</legend>
    <div class="fgrid">
     <div class="field"><label for="o-inv-in">Фактури за покупки (входящи)</label><input id="o-inv-in" name="invoicesIn" type="number" min="0" max="1000000" inputmode="numeric"></div>
@@ -371,7 +372,7 @@
    </div>
   </fieldset>
 
-  <fieldset class="ostep" data-step="2" hidden>
+  <fieldset class="ostep" data-step="2" id="os-2">
    <legend>3. Финанси и разплащания</legend>
    <div class="fgrid">
     <div class="field"><label for="o-accounts">Брой банкови сметки</label><input id="o-accounts" name="bankAccounts" type="number" min="0" max="1000" inputmode="numeric"></div>
@@ -385,7 +386,7 @@
    </div>
   </fieldset>
 
-  <fieldset class="ostep" data-step="3" hidden>
+  <fieldset class="ostep" data-step="3" id="os-3">
    <legend>4. Специфики на дейността</legend>
    <div class="fgrid">
     <div class="field"><span class="lbl">Дълготрайни активи за амортизация</span><div class="yn" data-name="fixedAssets"></div></div>
@@ -396,25 +397,30 @@
    </div>
   </fieldset>
 
-  <fieldset class="ostep" data-step="4" hidden>
-   <legend>5. Допълнителни услуги и организация</legend>
+  <fieldset class="ostep" data-step="4" id="os-4">
+   <legend>5. Допълнителни услуги</legend>
    <div class="fgrid">
     <div class="field"><span class="lbl">Изготвяне на ГФО (Годишен финансов отчет)</span><div class="yn" data-name="gfo"></div></div>
     <div class="field"><span class="lbl">Съдействие при кредити или лизинг</span><div class="yn" data-name="loans"></div></div>
     <div class="field"><span class="lbl">Консултации по данъчно планиране</span><div class="yn" data-name="taxPlanning"></div></div>
-    <div class="field"><span class="lbl">Предаване на документи</span><div class="yn" data-name="docs" data-options="Дигитално|Хартиено"></div></div>
-    <div class="field full"><label for="o-software">Настоящ счетоводен софтуер (ако имате)</label><input id="o-software" name="currentSoftware" maxlength="200"></div>
+   </div>
+  </fieldset>
+
+  <fieldset class="ostep" data-step="5" id="os-5">
+   <legend>6. Организация на работата</legend>
+   <div class="fgrid">
+    <div class="field"><span class="lbl">Предпочитан начин за предаване на документи</span><div class="yn" data-name="docs" data-options="Дигитално|Хартиено"></div></div>
+    <div class="field"><label for="o-software">Настоящ счетоводен софтуер (ако имате)</label><input id="o-software" name="currentSoftware" maxlength="200"></div>
     <label class="check full"><input type="checkbox" id="o-gdpr" name="consent" required> Съгласен/а съм данните ми да бъдат използвани за изготвяне на оферта и връзка с мен.</label>
     <div class="hp" aria-hidden="true"><label for="o-web">Уебсайт</label><input id="o-web" name="website" tabindex="-1" autocomplete="off"></div>
    </div>
   </fieldset>
 
   <div class="status" role="status" aria-live="polite" hidden></div>
+  </div>
   <div class="offer-foot">
-   <button class="btn btn-ghost" type="button" id="oBack" hidden>Назад</button>
-   <span class="ostep-count" id="oCount">Стъпка 1 от 5</span>
-   <button class="btn btn-primary" type="button" id="oNext">Напред <svg class="arr" width="16" height="16"><use href="#i-arrow"/></svg></button>
-   <button class="btn btn-primary" type="submit" id="oSend" hidden>Изпрати анкетата <svg class="arr" width="16" height="16"><use href="#i-arrow"/></svg></button>
+   <span class="ostep-count" id="oCount">Раздел 1 от 6</span>
+   <button class="btn btn-primary" type="submit" id="oSend">Изпрати анкетата <svg class="arr" width="16" height="16"><use href="#i-arrow"/></svg></button>
   </div>
   <div class="offer-done" id="offerDone" hidden>
    <span class="done-ic"><svg><use href="#i-check"/></svg></span>
@@ -426,7 +432,7 @@
 </dialog>
 
 <div class="dock" id="dock" role="region" aria-label="Бърза връзка" hidden>
- <a class="dock-btn ink" href="#contacts"><svg><use href="#i-chat"/></svg><span>Запитване</span></a>
+ <button class="dock-btn ink" type="button" data-offer><svg><use href="#i-chat"/></svg><span>Запитване</span></button>
  <button class="dock-btn call" type="button" data-offer><svg><use href="#i-offer"/></svg><span>Заяви оферта</span></button>
  <button class="dock-x" id="dockClose" type="button" aria-label="Затвори"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 </div>
