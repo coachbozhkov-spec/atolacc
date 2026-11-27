@@ -76,7 +76,8 @@ module.exports = function blog({ DATA, PUBLIC, readList, writeList, locked, json
     const fix = s => s.replace(/(<a\b[^>]*\shref=")#/g, '$1/#').replace(/(src|srcset)="assets\//g, '$1="/assets/');
     const sprite = html.slice(html.indexOf('<svg width="0"'), html.indexOf('</svg>', html.indexOf('</defs>')) + 6);
     shell = {
-      head: html.slice(html.indexOf('<!--HEAD-->') + 11, html.indexOf('<!--/HEAD-->')).replace('href="styles.css"', 'href="/styles.css"'),
+      head: html.slice(html.indexOf('<!--HEAD-->') + 11, html.indexOf('<!--/HEAD-->')),
+      script: (html.match(/<script src="\/app\.js[^"]*"><\/script>/) || ['<script src="/app.js"></script>'])[0],
       sprite,
       header: fix(cut('<header class="site-header"', '</header>')),
       tail: fix(html.slice(html.indexOf('<footer class="foot">'), html.indexOf('<!--/BODY-->'))),
@@ -112,7 +113,7 @@ ${s.header.replace('<a href="/blog">Блог</a>', '<a href="/blog" class="activ
 ${body}
 </main>
 ${s.tail}
-<script src="/app.js"></script>
+${s.script}
 </body>
 </html>`;
   }
@@ -241,7 +242,11 @@ ${more.map((x, i) => card(x, i)).join('\n')}
       cover: str(b.cover, 200), coverAlt: str(b.coverAlt, 160), author: str(b.author, 80), status: b.status === 'published' ? 'published' : 'draft',
       date: /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : today() }, e = {};
     if (v.title.length < 3) e.title = 'Напишете заглавие.';
-    if (v.excerpt.length < 10) e.excerpt = 'Напишете кратко описание (1-2 изречения).';
+    if (!v.excerpt) {
+      const plain = v.body.split(/\n\s*\n/).map(b => b.trim()).find(b => b && !/^(#|!\[|[-•>]\s|\d+[.)]\s)/.test(b)) || '';
+      const t = plain.replace(/\*\*|\*|\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\s+/g, ' ');
+      v.excerpt = t.length > 180 ? t.slice(0, 180).replace(/\s\S*$/, '') + '…' : t;
+    }
     if (v.body.length < 20) e.body = 'Статията е твърде кратка.';
     if (v.cover && !/^\/uploads\/[a-z0-9]+\.(jpg|png|webp)$/.test(v.cover)) v.cover = '';
     let slug = slugify(str(b.slug, 80) || v.title), base = slug, n = 2;
