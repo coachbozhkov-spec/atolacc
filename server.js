@@ -1,5 +1,5 @@
 // ATOL Accounting: малък сървър без рамки.
-// Сервира сайта от ./public и приема заявки от формите за контакт и среща.
+// Сервира сайта от ./public, блога (blog.js) и приема заявки от формите за контакт, среща и оферта.
 // Стартиране: npm install && npm start  (по подразбиране http://localhost:3000)
 'use strict';
 const http = require('http');
@@ -166,12 +166,16 @@ async function serveStatic(req, res) {
   } catch { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Страницата не е намерена.'); }
 }
 
+/* ---------- Блог и админ панел (blog.js) ---------- */
+const blogRoute = require('./blog')({ DATA, PUBLIC, readList, writeList, locked, json, SECURITY });
+
 /* ---------- Маршрути ---------- */
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   try {
     if (url.pathname === '/healthz') return json(res, 200, { ok: true });
+    if (await blogRoute(req, res, url, ip)) return;
     if (url.pathname === '/api/slots' && req.method === 'GET') {
       const date = url.searchParams.get('date') || '';
       if (validDate(date)) return json(res, 200, { taken: SLOTS });

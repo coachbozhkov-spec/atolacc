@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Блог: админ | ATOL Accounting</title>
+<meta name="color-scheme" content="light">
+<link rel="icon" href="/assets/mark-light.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body class="adm">
+<header class="adm-top">
+ <a class="adm-brand" href="/admin"><img src="/assets/mark-light.svg" alt="" width="30" height="30"><span>ATOL <b>Блог</b></span></a>
+ <nav><a href="/blog" target="_blank" rel="noopener">Към блога</a><button type="button" id="logout" hidden>Изход</button></nav>
+</header>
+
+<main class="adm-main">
+ <!-- Вход -->
+ <section id="vLogin" class="adm-login" hidden>
+  <form class="adm-card" id="loginForm">
+   <span class="eyebrow">Админ панел</span>
+   <h1>Вход</h1>
+   <p class="muted">Въведете паролата, за да пишете и редактирате статии.</p>
+   <div class="field"><label for="pw">Парола</label><input id="pw" type="password" autocomplete="current-password" required></div>
+   <p class="adm-msg" id="loginMsg" role="alert"></p>
+   <button class="btn btn-primary" type="submit">Влез</button>
+  </form>
+ </section>
+
+ <!-- Изключен панел -->
+ <section id="vOff" class="adm-login" hidden>
+  <div class="adm-card"><span class="eyebrow">Админ панел</span><h1>Панелът не е включен</h1><p class="muted">Задайте парола в Railway (променлива ADMIN_PASSWORD) и презаредете страницата.</p></div>
+ </section>
+
+ <!-- Списък -->
+ <section id="vList" hidden>
+  <div class="adm-head">
+   <div><span class="eyebrow">Блог</span><h1>Статии</h1></div>
+   <button class="btn btn-primary" type="button" id="newPost">Нова статия <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+  <div class="adm-list" id="list"></div>
+ </section>
+
+ <!-- Редактор -->
+ <section id="vEdit" hidden>
+  <form id="editForm" novalidate>
+   <div class="adm-head">
+    <div><button class="adm-back" type="button" id="back">← Всички статии</button><h1 id="editTitle">Нова статия</h1></div>
+    <div class="adm-actions"><a class="btn btn-ghost" id="viewLink" href="#" target="_blank" rel="noopener" hidden>Виж</a><button class="btn btn-primary" type="submit" id="saveBtn">Запази</button></div>
+   </div>
+   <p class="adm-msg" id="editMsg" role="status"></p>
+   <div class="adm-grid">
+    <div class="adm-card adm-main-col">
+     <div class="field"><label for="f-title">Заглавие</label><input id="f-title" name="title" maxlength="160" required placeholder="Например: Как да подготвите документите за ГФО"><span class="msg"></span></div>
+     <div class="field"><label for="f-excerpt">Кратко описание <small>(показва се в списъка и в Google)</small></label><textarea id="f-excerpt" name="excerpt" maxlength="300" rows="2" required></textarea><span class="msg"></span></div>
+     <div class="field">
+      <label for="f-body">Текст</label>
+      <div class="adm-tools" role="toolbar" aria-label="Форматиране">
+       <button type="button" data-md="h2" title="Заглавие">З</button>
+       <button type="button" data-md="h3" title="Подзаглавие">з</button>
+       <button type="button" data-md="b" title="Удебелен"><b>Ж</b></button>
+       <button type="button" data-md="i" title="Курсив"><i>К</i></button>
+       <button type="button" data-md="ul" title="Списък">• Списък</button>
+       <button type="button" data-md="ol" title="Номериран списък">1. Списък</button>
+       <button type="button" data-md="q" title="Цитат">„Цитат“</button>
+       <button type="button" data-md="a" title="Връзка">Връзка</button>
+       <label class="adm-tool-file" title="Снимка в текста">Снимка<input type="file" id="bodyImg" accept="image/jpeg,image/png,image/webp" hidden></label>
+      </div>
+      <textarea id="f-body" name="body" rows="22" required></textarea><span class="msg"></span>
+      <details class="adm-help"><summary>Как се форматира текстът</summary>
+       <p>Оставете празен ред между абзаците.</p>
+       <ul><li><code>## Заглавие</code> за заглавие на раздел, <code>### Подзаглавие</code></li><li><code>- текст</code> на всеки ред за списък, <code>1. текст</code> за номериран</li><li><code>**удебелен**</code>, <code>*курсив*</code>, <code>[текст](https://адрес)</code> за връзка</li><li><code>&gt; текст</code> за открояване</li></ul>
+      </details>
+     </div>
+    </div>
+    <aside class="adm-side">
+     <div class="adm-card">
+      <span class="lbl">Статус</span>
+      <div class="adm-seg"><label><input type="radio" name="status" value="draft" checked><span>Чернова</span></label><label><input type="radio" name="status" value="published"><span>Публикувана</span></label></div>
+      <div class="field"><label for="f-date">Дата на публикуване</label><input id="f-date" name="date" type="date"></div>
+      <div class="field"><label for="f-cat">Категория</label><input id="f-cat" name="category" maxlength="40" list="cats" placeholder="Например: Данъци"><datalist id="cats"></datalist></div>
+     </div>
+     <div class="adm-card">
+      <span class="lbl">Корица</span>
+      <div class="adm-cover" id="coverBox"><span>Без снимка, ще се покаже графика в стила на сайта.</span></div>
+      <div class="adm-cover-btns"><label class="btn btn-ghost adm-sm">Качи снимка<input type="file" id="coverFile" accept="image/jpeg,image/png,image/webp" hidden></label><button type="button" class="btn btn-ghost adm-sm" id="coverDel" hidden>Махни</button></div>
+      <input type="hidden" name="cover" id="f-cover">
+      <div class="field"><label for="f-alt">Описание на снимката</label><input id="f-alt" name="coverAlt" maxlength="160"></div>
+     </div>
+     <div class="adm-card">
+      <div class="field"><label for="f-slug">Адрес на статията</label><div class="adm-slug"><span>/blog/</span><input id="f-slug" name="slug" maxlength="80" placeholder="автоматично от заглавието"></div></div>
+      <div class="field"><label for="f-author">Автор</label><input id="f-author" name="author" maxlength="80" value="Десислава Топалова"></div>
+     </div>
+     <button type="button" class="adm-del" id="delBtn" hidden>Изтрий статията</button>
+    </aside>
+   </div>
+  </form>
+ </section>
+</main>
+<script src="/admin.js"></script>
+</body>
+</html>

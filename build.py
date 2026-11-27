@@ -31,6 +31,7 @@ steps = ''.join(f'   <li class="rv" style="--i:{i}"><span class="n">{i+1}</span>
 html = html.replace('{{SERVICES}}', '\n'.join(svc)).replace('{{INDUSTRIES}}', '\n'.join(ind)).replace('{{STEPS}}', steps.rstrip())
 (pub/'index.html').write_text(html)
 shutil.copy(src/'styles.css', pub/'styles.css'); shutil.copy(src/'app.js', pub/'app.js')
+for f in ('admin.html', 'admin.js'): shutil.copy(src/f, pub/f)
 # preview: един файл, без собствени html/head/body тагове
 body = html.split('<!--BODY-->')[1].split('<!--/BODY-->')[0]
 fav = (pub/'assets'/'mark-light.svg').read_text()

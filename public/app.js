@@ -70,7 +70,7 @@
 
   /* Клик върху услуга избира темата на срещата */
   const serviceSel = $('#b-service');
-  $$('[data-service]').forEach(a => a.addEventListener('click', () => { serviceSel.value = a.dataset.service; }));
+  $$('[data-service]').forEach(a => a.addEventListener('click', () => { if (serviceSel) serviceSel.value = a.dataset.service; }));
 
   /* API помощник. Без сървър (статичен преглед) работи в демо режим. */
   async function api(path, opts) {
@@ -90,7 +90,7 @@
   const isWeekend = s => { const d = new Date(s + 'T12:00:00'); return d.getDay() === 0 || d.getDay() === 6; };
   const nextWorkday = () => { const d = new Date(); do { d.setDate(d.getDate() + 1); } while (d.getDay() === 0 || d.getDay() === 6); return d; };
   const min = nextWorkday(); const max = new Date(); max.setDate(max.getDate() + 60);
-  dateIn.min = iso(min); dateIn.max = iso(max); dateIn.value = iso(min);
+  if (dateIn) { dateIn.min = iso(min); dateIn.max = iso(max); dateIn.value = iso(min); }
 
   async function loadSlots() {
     slotsBox.innerHTML = ''; slotMsg.textContent = '';
@@ -113,8 +113,7 @@
       lab.append(inp, sp); slotsBox.appendChild(lab);
     });
   }
-  dateIn.addEventListener('change', loadSlots);
-  loadSlots();
+  if (dateIn) { dateIn.addEventListener('change', loadSlots); loadSlots(); }
 
   /* Валидация (същите правила проверява и сървърът) */
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -168,8 +167,8 @@
     if (r.status === 429) return showStatus(form, 'bad', 'Изпратихте много заявки за кратко време. Опитайте отново след няколко минути.');
     showStatus(form, 'bad', 'Заявката не беше изпратена. Обадете се на +359 894 097 779 или опитайте отново.');
   }
-  $('#bookingForm').addEventListener('submit', e => { e.preventDefault(); submit(e.target, '/api/booking', 'Благодарим! Получихме заявката ви и ще потвърдим часа по имейл.'); });
-  $('#contactForm').addEventListener('submit', e => { e.preventDefault(); submit(e.target, '/api/contact', 'Благодарим! Ще ви отговорим до един работен ден.'); });
+  $('#bookingForm')?.addEventListener('submit', e => { e.preventDefault(); submit(e.target, '/api/booking', 'Благодарим! Получихме заявката ви и ще потвърдим часа по имейл.'); });
+  $('#contactForm')?.addEventListener('submit', e => { e.preventDefault(); submit(e.target, '/api/contact', 'Благодарим! Ще ви отговорим до един работен ден.'); });
 
   /* Модални прозорци: детайли за услуга/индустрия и анкетна карта */
   const openModal = d => { if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', ''); document.documentElement.style.overflow = 'hidden'; };
