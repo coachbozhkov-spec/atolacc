@@ -170,4 +170,99 @@
   }
   $('#bookingForm').addEventListener('submit', e => { e.preventDefault(); submit(e.target, '/api/booking', 'Благодарим! Получихме заявката ви и ще потвърдим часа по имейл.'); });
   $('#contactForm').addEventListener('submit', e => { e.preventDefault(); submit(e.target, '/api/contact', 'Благодарим! Ще ви отговорим до един работен ден.'); });
+
+  /* Модални прозорци: детайли за услуга/индустрия и анкетна карта */
+  const openModal = d => { if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', ''); document.documentElement.style.overflow = 'hidden'; };
+  const closeModal = d => { if (d.open) { if (typeof d.close === 'function') d.close(); else d.removeAttribute('open'); } document.documentElement.style.overflow = ''; };
+  $$('dialog.modal').forEach(d => {
+    d.addEventListener('click', e => { if (e.target === d) closeModal(d); });
+    d.addEventListener('close', () => { document.documentElement.style.overflow = ''; });
+    $$('[data-close]', d).forEach(b => b.addEventListener('click', () => closeModal(d)));
+  });
+
+  const detail = $('#detail');
+  $$('[data-detail]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.getElementById(a.dataset.detail);
+    if (!t) return;
+    $('#detailKind').textContent = t.dataset.kind;
+    $('#detailTitle').textContent = t.dataset.title;
+    $('#detailIcon').innerHTML = '<svg><use href="#i-' + t.dataset.icon + '"/></svg>';
+    const body = $('#detailBody'); body.innerHTML = ''; body.appendChild(t.content.cloneNode(true));
+    if (a.dataset.service && serviceSel) serviceSel.value = a.dataset.service;
+    openModal(detail);
+  }));
+
+  /* Анкетна карта */
+  const offer = $('#offer'), oForm = $('#offerForm');
+  $$('.yn', oForm).forEach(box => {
+    (box.dataset.options || 'Да|Не').split('|').forEach(o => {
+      const l = document.createElement('label'), i = document.createElement('input'), s = document.createElement('span');
+      i.type = 'radio'; i.name = box.dataset.name; i.value = o; s.textContent = o;
+      l.append(i, s); box.appendChild(l);
+    });
+  });
+  const skuField = $('#skuField');
+  oForm.addEventListener('change', e => { if (e.target.name === 'warehouse') skuField.hidden = e.target.value !== 'Да'; });
+  const steps = $$('.ostep', oForm), bar = $$('.ostep-bar li', oForm);
+  const oBack = $('#oBack'), oNext = $('#oNext'), oSend = $('#oSend'), oCount = $('#oCount');
+  let step = 0;
+  function showStep(n) {
+    step = n;
+    steps.forEach((f, i) => { f.hidden = i !== n; });
+    bar.forEach((li, i) => li.classList.toggle('on', i <= n));
+    oBack.hidden = n === 0; oNext.hidden = n === steps.length - 1; oSend.hidden = n !== steps.length - 1;
+    oCount.textContent = 'Стъпка ' + (n + 1) + ' от ' + steps.length;
+    $('.status', oForm).hidden = true;
+    oForm.scrollTop = 0;
+  }
+  function checkStep(n) {
+    let ok = true;
+    $$('.field', steps[n]).forEach(f => { f.classList.remove('err'); const m = $('.msg', f); if (m) m.textContent = ''; });
+    $$('input[required],textarea[required]', steps[n]).forEach(el => {
+      if (el.type === 'checkbox') return;
+      const v = el.value.trim(), f = el.closest('.field'), m = f && $('.msg', f);
+      let msg = '';
+      if (!v) msg = 'Попълнете това поле.';
+      else if (el.type === 'email' && !emailRe.test(v)) msg = 'Проверете имейл адреса.';
+      else if (el.type === 'tel' && !phoneRe.test(v)) msg = 'Проверете телефонния номер.';
+      if (msg) { ok = false; if (f) f.classList.add('err'); if (m) m.textContent = msg; }
+    });
+    if (!ok) { const e = $('.err input,.err textarea', steps[n]); if (e) e.focus(); }
+    return ok;
+  }
+  oNext.addEventListener('click', () => { if (checkStep(step)) showStep(step + 1); });
+  oBack.addEventListener('click', () => showStep(step - 1));
+  $$('[data-offer]').forEach(b => b.addEventListener('click', e => {
+    e.preventDefault();
+    if (detail.open) closeModal(detail);
+    oForm.classList.remove('sent'); $('#offerDone').hidden = true; showStep(0);
+    openModal(offer);
+  }));
+  oForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (step !== steps.length - 1) { if (checkStep(step)) showStep(step + 1); return; }
+    if (!$('#o-gdpr').checked) return showStatus(oForm, 'bad', 'Потвърдете съгласието си, за да изпратим анкетата.');
+    const data = {};
+    for (const [k, v] of new FormData(oForm).entries()) { if (k === 'currencies') (data.currencies = data.currencies || []).push(v); else data[k] = v; }
+    data.consent = true;
+    oSend.disabled = true;
+    const r = await api('/api/offer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    oSend.disabled = false;
+    const done = demo => {
+      oForm.classList.add('sent'); const d = $('#offerDone'); d.hidden = false;
+      $('p', d).textContent = demo ? 'Демо версия: анкетата не е изпратена. На живия сайт тук клиентът получава потвърждение.' : 'Получихме анкетата ви. Ще прегледаме данните и ще ви изпратим индивидуална оферта на посочения имейл.';
+      oForm.reset(); skuField.hidden = true;
+    };
+    if (r.demo) return done(true);
+    if (r.status === 200 && r.data.ok) return done(false);
+    if (r.status === 400 && r.data.errors) {
+      const first = Object.keys(r.data.errors)[0];
+      const idx = steps.findIndex(f => f.querySelector('[name="' + first + '"]'));
+      if (idx >= 0) { showStep(idx); checkStep(idx); }
+      return showStatus(oForm, 'bad', 'Проверете отбелязаните полета.');
+    }
+    if (r.status === 429) return showStatus(oForm, 'bad', 'Изпратихте много заявки за кратко време. Опитайте отново след няколко минути.');
+    showStatus(oForm, 'bad', 'Анкетата не беше изпратена. Опитайте отново или ни пишете на atolacc@outlook.com.');
+  });
 })();

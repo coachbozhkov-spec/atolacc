@@ -10,6 +10,25 @@ def themed(svg, pre):
     return svg.replace('role="img"', 'role="img" width="193" height="62"')
 html = (src/'index.html').read_text()
 html = html.replace('{{LOGO_HEADER}}', themed(logo, 'hd')).replace('{{LOGO_FOOTER}}', themed(logo, 'ft').replace('var(--g1)', '#FF5FA2').replace('var(--g2)', '#FF9A4D').replace('var(--g3)', '#FFD04D'))
+
+import html as H
+C = {}
+exec((src/'content.py').read_text(), C)
+def esc(t): return H.escape(t, quote=True)
+svc = []
+for i, x in enumerate(C['SERVICES']):
+    cls = 'svc rv' + (' feature' if x.get('feature') else '') + (' dark' if x.get('dark') else '')
+    tag = f'<span class="tag">{esc(x["tag"])}</span>' if x.get('tag') else ''
+    items = ''.join(f'<li>{esc(t)}</li>' for t in x['items'])
+    svc.append(f'   <a class="{cls}" href="#svc-{x["id"]}" data-detail="svc-{x["id"]}" data-service="{esc(x["title"])}">{tag}<span class="ic"><svg><use href="#i-{x["icon"]}"/></svg></span><h3>{esc(x["title"])}</h3><p>{esc(x["short"])}</p><span class="more">Какво включва <svg><use href="#i-arrow"/></svg></span></a>\n'
+               f'   <template id="svc-{x["id"]}" data-kind="Услуга" data-icon="{x["icon"]}" data-title="{esc(x["title"])}"><h4>За кого е</h4><p>{esc(x["who"])}</p><h4>Какво включва</h4><ul class="checks">{items}</ul></template>')
+ind = []
+for i, x in enumerate(C['INDUSTRIES']):
+    ind.append(f'   <li class="rv" style="--i:{i % 8}"><a href="#ind-{i}" data-detail="ind-{i}"><svg><use href="#i-{x["icon"]}"/></svg><span>{esc(x["short"])}</span><svg class="go"><use href="#i-arrow"/></svg></a>'
+               f'<template id="ind-{i}" data-kind="Индустрия" data-icon="{x["icon"]}" data-title="{esc(x["title"])}"><p class="lead-in">{esc(x["intro"])}</p><h4>Какво предлагаме</h4><p>{esc(x["offer"])}</p></template></li>')
+ind.append(f'   <li class="rv cta-tile" style="--i:6"><a href="#contacts"><svg><use href="#i-chat"/></svg><span>Друг бранш? Пишете ни</span><svg class="go"><use href="#i-arrow"/></svg></a></li>')
+steps = ''.join(f'   <li class="rv" style="--i:{i}"><span class="n">{i+1}</span><h3>{esc(t)}</h3><p>{esc(d)}</p></li>\n' for i, (t, d) in enumerate(C['STEPS']))
+html = html.replace('{{SERVICES}}', '\n'.join(svc)).replace('{{INDUSTRIES}}', '\n'.join(ind)).replace('{{STEPS}}', steps.rstrip())
 (pub/'index.html').write_text(html)
 shutil.copy(src/'styles.css', pub/'styles.css'); shutil.copy(src/'app.js', pub/'app.js')
 # preview: един файл, без собствени html/head/body тагове

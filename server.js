@@ -81,6 +81,47 @@ function checkContact(b) {
   if (b.consent !== true) e.consent = 'Нужно е съгласие.';
   return { v, e };
 }
+const YN = ['Да', 'Не'];
+const OFFER_YN = ['vat', 'cashOps', 'intraEu', 'virtualPos', 'physicalPos', 'integration', 'fixedAssets', 'warehouse', 'gfo', 'loans', 'taxPlanning'];
+const OFFER_NUM = ['employees', 'invoicesIn', 'invoicesOut', 'bankStatements', 'bankAccounts', 'transfers', 'cashRegisters', 'sites', 'skuCount'];
+const CURRENCIES = ['EUR', 'BGN', 'USD', 'GBP', 'Друга'];
+function checkOffer(b) {
+  const v = { name: str(b.name, 100), company: str(b.company, 120), email: str(b.email, 160), phone: str(b.phone, 30),
+    sector: str(b.sector, 1000), erp: str(b.erp, 200), reporting: str(b.reporting, 1000), currentSoftware: str(b.currentSoftware, 200) }, e = {};
+  if (v.name.length < 2) e.name = 'Попълнете името си.';
+  if (v.company.length < 2) e.company = 'Попълнете името на фирмата.';
+  if (!emailRe.test(v.email)) e.email = 'Проверете имейл адреса.';
+  if (!phoneRe.test(v.phone)) e.phone = 'Проверете телефонния номер.';
+  if (v.sector.length < 2) e.sector = 'Опишете дейността си.';
+  for (const k of OFFER_YN) { const x = str(b[k], 5); v[k] = YN.includes(x) ? x : ''; }
+  { const x = str(b.docs, 12); v.docs = ['Дигитално', 'Хартиено'].includes(x) ? x : ''; }
+  for (const k of OFFER_NUM) {
+    const raw = str(String(b[k] ?? ''), 12);
+    if (!raw) { v[k] = ''; continue; }
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < 0 || n > 10000000) e[k] = 'Въведете цяло положително число.'; else v[k] = n;
+  }
+  v.currencies = Array.isArray(b.currencies) ? [...new Set(b.currencies.filter(c => CURRENCIES.includes(c)))] : [];
+  if (b.consent !== true) e.consent = 'Нужно е съгласие.';
+  return { v, e };
+}
+const OFFER_LABELS = [
+  ['1. Обща информация', [['company', 'Фирма'], ['sector', 'Сектор на дейност'], ['vat', 'Регистрация по ДДС'], ['employees', 'Служители на трудов договор']]],
+  ['2. Оперативен обем (средномесечно)', [['invoicesIn', 'Фактури за покупки'], ['invoicesOut', 'Фактури за продажби'], ['bankStatements', 'Банкови извлечения'], ['cashOps', 'Касови операции'], ['intraEu', 'ВОП/ВОД или внос/износ извън ЕС']]],
+  ['3. Финанси и разплащания', [['bankAccounts', 'Банкови сметки'], ['currencies', 'Валути'], ['transfers', 'Преводи на месец'], ['cashRegisters', 'Касови апарати'], ['sites', 'Обекти с каса'], ['virtualPos', 'Виртуален ПОС'], ['physicalPos', 'Физически ПОС'], ['integration', 'Интеграция софтуер/каса/счетоводство']]],
+  ['4. Специфики на дейността', [['fixedAssets', 'ДМА за амортизация'], ['erp', 'Софтуер за фактуриране/ERP'], ['reporting', 'Специфични нужди от отчетност'], ['warehouse', 'Складово стопанство'], ['skuCount', 'Брой артикули']]],
+  ['5. Допълнителни услуги и организация', [['gfo', 'Изготвяне на ГФО'], ['loans', 'Съдействие за кредити/лизинг'], ['taxPlanning', 'Данъчно планиране'], ['docs', 'Предаване на документи'], ['currentSoftware', 'Настоящ счетоводен софтуер']]],
+];
+function offerText(v) {
+  const out = [`Име: ${v.name}`, `Имейл: ${v.email}`, `Телефон: ${v.phone}`, ''];
+  for (const [title, rows] of OFFER_LABELS) {
+    out.push(title);
+    for (const [k, label] of rows) { const x = Array.isArray(v[k]) ? v[k].join(', ') : v[k]; out.push(`  ${label}: ${x === '' || x == null ? '-' : x}`); }
+    out.push('');
+  }
+  return out;
+}
+
 function checkBooking(b) {
   const v = { name: str(b.name, 100), company: str(b.company, 120), email: str(b.email, 160), phone: str(b.phone, 30),
     service: str(b.service, 80), date: str(b.date, 10), time: str(b.time, 5), message: str(b.message, 2000) }, e = {};
@@ -137,11 +178,20 @@ const server = http.createServer(async (req, res) => {
       const list = await readList('bookings.json');
       return json(res, 200, { taken: list.filter(b => b.date === date && b.status !== 'cancelled').map(b => b.time) });
     }
-    if ((url.pathname === '/api/contact' || url.pathname === '/api/booking') && req.method === 'POST') {
+    if (['/api/contact', '/api/booking', '/api/offer'].includes(url.pathname) && req.method === 'POST') {
       if (!(req.headers['content-type'] || '').includes('application/json')) return json(res, 415, { error: 'JSON only' });
       const body = await readBody(req);
       if (body.website) return json(res, 200, { ok: true }); // капан за ботове
       if (limited(ip)) return json(res, 429, { error: 'Too many requests' });
+
+      if (url.pathname === '/api/offer') {
+        const { v, e } = checkOffer(body);
+        if (Object.keys(e).length) return json(res, 400, { errors: e });
+        const item = { id: Date.now().toString(36), createdAt: new Date().toISOString(), status: 'new', ...v };
+        await locked(async () => { const l = await readList('offers.json'); l.push(item); await writeList('offers.json', l); });
+        notify(`Заявка за оферта: ${v.company} (${v.name})`, offerText(v));
+        return json(res, 200, { ok: true });
+      }
 
       if (url.pathname === '/api/contact') {
         const { v, e } = checkContact(body);
